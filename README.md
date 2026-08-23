@@ -31,9 +31,19 @@ Persistent library/install-list UI, background auto-update checks, run-confirmat
 
 ## Development
 
+The interface itself lives in a separate repo, [`brightencode-launcher-ui`](https://github.com/DavidMarsanic/brightencode-launcher-ui) — this repo (the wrapper) vendors a pinned release of it into `vendor/launcher-ui/` before every dev/build, per `launcher-ui.version` (see `scripts/vendor-launcher-ui.sh`). That happens automatically:
+
 ```
 cargo tauri dev
 ```
+
+To iterate on the UI itself without a tag/release round-trip, point the vendor step at a local `brightencode-launcher-ui` checkout instead:
+
+```
+LAUNCHER_UI_LOCAL=../brightencode-launcher-ui cargo tauri dev
+```
+
+(Re-run `bash scripts/vendor-launcher-ui.sh` with the same env var set after each UI edit — it's not watched/hot-reloaded, since composition is build-time by design, not live.)
 
 Note: `cargo tauri dev` runs the raw debug binary, which is not a registered `.app` bundle, so macOS won't route `securexe://` links to it. To test the actual protocol handoff, build and open the bundle once:
 

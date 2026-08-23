@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Populated by scripts/vendor-launcher-ui.sh from launcher-ui.version —
+# never committed, same reason src-tauri/target isn't.
+/vendor/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
