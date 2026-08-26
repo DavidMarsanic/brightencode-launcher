@@ -69,13 +69,26 @@ pub async fn install_and_launch(
 
     let manifest = orchestrator::fetch_manifest(&client, &slug, requested_commit.as_deref()).await?;
 
-    let commit = manifest
-        .source
-        .as_ref()
-        .map(|s| s.commit.clone())
-        .or(requested_commit)
-        .filter(|c| repo::is_safe_commit(c))
-        .ok_or_else(|| LauncherError::NotFound(format!("no resolvable commit for {repo_path}")))?;
+    // GET /manifest has never actually carried a resolved commit anywhere
+    // in its response — only GET /search does, keyed by the owner__repo
+    // slug form (the same fix as brightencode-web's lib/releases.ts). A
+    // pinned request (a signed securexe://run link, or an explicit
+    // Some(commit)) already *is* the real commit, so that's used directly
+    // without needing a search round trip; an unpinned request (a
+    // Browse-tab install, or Update/"Update all") resolves "latest" via
+    // search instead.
+    let commit = match requested_commit.filter(|c| repo::is_safe_commit(c)) {
+        Some(c) => c,
+        None => {
+            let results = orchestrator::search_catalog(&client, Some(&slug)).await?;
+            results
+                .into_iter()
+                .find(|r| r.repo.eq_ignore_ascii_case(&repo_path))
+                .and_then(|r| r.commit)
+                .filter(|c| repo::is_safe_commit(c))
+                .ok_or_else(|| LauncherError::NotFound(format!("no resolvable commit for {repo_path}")))?
+        }
+    };
 
     let artifact = manifest
         .artifact_for(&target)

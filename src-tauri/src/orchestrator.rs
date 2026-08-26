@@ -21,13 +21,7 @@ pub struct Artifact {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Source {
-    pub commit: String,
-}
-
-#[derive(Debug, Deserialize)]
 pub struct Manifest {
-    pub source: Option<Source>,
     #[serde(default)]
     pub artifacts: Vec<Artifact>,
 }
@@ -131,6 +125,12 @@ pub struct SearchResult {
     #[serde(default)]
     pub kind: Option<String>,
     pub artifacts: Vec<Artifact>,
+    /// The commit this result's artifacts were built from. This is the
+    /// *only* place the worker actually reports a resolved commit — despite
+    /// its name, `GET /manifest` never carries one (see flow.rs's commit
+    /// resolution, which is why this field exists here).
+    #[serde(default)]
+    pub commit: Option<String>,
 }
 
 impl SearchResult {
@@ -493,5 +493,41 @@ mod tests {
         let svg = String::from_utf8(bytes).expect("icon response wasn't valid UTF-8");
         assert!(svg.contains("<svg"), "response doesn't look like an SVG: {svg}");
         assert!(svg.contains("</svg>"), "response doesn't look like a complete SVG: {svg}");
+    }
+
+    /// GET /manifest has never actually carried a resolved commit (its
+    /// `source` field is a plain "build"/"owner" string, not the `{commit}`
+    /// object this code used to assume) — GET /search is the only endpoint
+    /// that reports one, and only when queried by the owner__repo slug
+    /// form, not "owner/repo". This pins down both of those, the same way
+    /// flow.rs's commit resolution now relies on them, against the real
+    /// worker rather than a mock — so a future change to either shape gets
+    /// caught here instead of silently breaking every install again.
+    #[tokio::test]
+    async fn search_catalog_resolves_a_real_commit_by_slug() {
+        let client = reqwest::Client::new();
+
+        let results = search_catalog(&client, Some("DavidMarsanic__pdf-toolkit"))
+            .await
+            .expect("search_catalog failed");
+        let match_ = results
+            .iter()
+            .find(|r| r.repo.eq_ignore_ascii_case("DavidMarsanic/pdf-toolkit"))
+            .expect("no matching repo in search results");
+
+        let commit = match_.commit.as_deref().expect("no commit in search result");
+        assert_eq!(commit.len(), 40, "commit doesn't look like a full sha: {commit}");
+        assert!(
+            commit.chars().all(|c| c.is_ascii_hexdigit()),
+            "commit isn't hex: {commit}"
+        );
+
+        let manifest = fetch_manifest(&client, "DavidMarsanic__pdf-toolkit", None)
+            .await
+            .expect("fetch_manifest failed");
+        assert!(
+            manifest.artifact_for("darwin-arm64").is_some(),
+            "expected a darwin-arm64 artifact in pdf-toolkit's manifest"
+        );
     }
 }
