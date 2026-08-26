@@ -60,7 +60,22 @@ if ! curl -fsSL "$base_url/launcher-ui.zip.sha256" -o "$tmp_dir/launcher-ui.zip.
 fi
 
 echo "Verifying checksum..."
-if ! (cd "$tmp_dir" && shasum -a 256 -c launcher-ui.zip.sha256); then
+# Neither tool is guaranteed present on every runner: macOS ships shasum
+# (Perl) but not always sha256sum; Linux and Windows' Git Bash ship
+# sha256sum (GNU coreutils) but not always shasum. Both read the same
+# "<hash>  <filename>" checksum-file format, so trying sha256sum first and
+# falling back to shasum covers all three release.yml platforms.
+verify_checksum() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum -c launcher-ui.zip.sha256
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 -c launcher-ui.zip.sha256
+  else
+    echo "error: neither sha256sum nor shasum is available to verify the download" >&2
+    return 1
+  fi
+}
+if ! (cd "$tmp_dir" && verify_checksum); then
   echo "error: launcher-ui.zip for $pin failed checksum verification — refusing to vendor a corrupted/tampered build." >&2
   exit 1
 fi
