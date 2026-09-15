@@ -23,16 +23,16 @@ jobs:
         include:
           - platform: macos-latest
             target: aarch64-apple-darwin
-            fixed_name: securexe-launcher-macos-arm64.dmg
+            fixed_name: brightencode-launcher-macos-arm64.dmg
           - platform: macos-latest
             target: x86_64-apple-darwin
-            fixed_name: securexe-launcher-macos-x64.dmg
+            fixed_name: brightencode-launcher-macos-x64.dmg
           - platform: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            fixed_name: securexe-launcher-linux-amd64.AppImage
+            fixed_name: brightencode-launcher-linux-amd64.AppImage
           - platform: windows-latest
             target: x86_64-pc-windows-msvc
-            fixed_name: securexe-launcher-windows-x64-setup.exe
+            fixed_name: brightencode-launcher-windows-x64-setup.exe
 
     runs-on: ${{ matrix.platform }}
     steps:
