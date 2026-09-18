@@ -55,12 +55,12 @@ open "securexe://run?repo=gohugoio/hugo"   # a real repo already built on the li
 
 ## Releasing
 
-Push a tag (`git tag v0.1.0 && git push origin v0.1.0`) or run the "Release" workflow manually from the Actions tab. CI builds installers for macOS (arm64 + x64), Windows, and Linux, and attaches them to a **draft** GitHub Release under both their versioned name and a fixed name (e.g. `securexe-launcher-macos-arm64.dmg`) that never changes between releases.
+Push a tag (`git tag v0.1.0 && git push origin v0.1.0`) or run the "Release" workflow manually from the Actions tab. CI builds installers for macOS (arm64 + x64), Windows, and Linux, and attaches them to a **draft** GitHub Release under both their versioned name and a fixed name (e.g. `brightencode-launcher-macos-arm64.dmg`) that never changes between releases.
 
 The release stays a draft — nothing is publicly downloadable — until you manually click "Publish" on it. Once published, link to installers with the stable, version-agnostic URL pattern so the website link never needs updating:
 
 ```
-https://github.com/DavidMarsanic/brightencode-launcher/releases/latest/download/securexe-launcher-macos-arm64.dmg
+https://github.com/DavidMarsanic/brightencode-launcher/releases/latest/download/brightencode-launcher-macos-arm64.dmg
 ```
 
 macOS builds are not yet code-signed/notarized — see the Status section below.
@@ -84,10 +84,10 @@ Every installer `release.yml` publishes is accompanied by two independent
 ways to check it wasn't corrupted or tampered with:
 
 - **Checksum** — a `.sha256` file next to each installer
-  (`securexe-launcher-macos-arm64.dmg.sha256`, etc.):
+  (`brightencode-launcher-macos-arm64.dmg.sha256`, etc.):
 
   ```bash
-  shasum -a 256 -c securexe-launcher-macos-arm64.dmg.sha256   # macOS/Linux
+  shasum -a 256 -c brightencode-launcher-macos-arm64.dmg.sha256   # macOS/Linux
   ```
 
 - **Build attestation** — GitHub's signed provenance, tying the exact file
@@ -95,7 +95,7 @@ ways to check it wasn't corrupted or tampered with:
   same "verified" tier shown for every catalog app on the website):
 
   ```bash
-  gh attestation verify securexe-launcher-macos-arm64.dmg --owner DavidMarsanic
+  gh attestation verify brightencode-launcher-macos-arm64.dmg --owner DavidMarsanic
   ```
 
 This mirrors the standard every app built through Securexe is already held

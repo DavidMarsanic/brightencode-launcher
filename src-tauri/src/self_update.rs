@@ -72,10 +72,10 @@ pub async fn check(current_version: &str) -> Result<Option<LauncherUpdate>, Laun
 /// when a new version ships.
 fn download_url_for_this_platform() -> Result<String, LauncherError> {
     let file = match (std::env::consts::OS, std::env::consts::ARCH) {
-        ("macos", "aarch64") => "securexe-launcher-macos-arm64.dmg",
-        ("macos", "x86_64") => "securexe-launcher-macos-x64.dmg",
-        ("linux", "x86_64") => "securexe-launcher-linux-amd64.AppImage",
-        ("windows", "x86_64") => "securexe-launcher-windows-x64-setup.exe",
+        ("macos", "aarch64") => "brightencode-launcher-macos-arm64.dmg",
+        ("macos", "x86_64") => "brightencode-launcher-macos-x64.dmg",
+        ("linux", "x86_64") => "brightencode-launcher-linux-amd64.AppImage",
+        ("windows", "x86_64") => "brightencode-launcher-windows-x64-setup.exe",
         (os, arch) => {
             return Err(LauncherError::Io(format!(
                 "no published build for {os}/{arch}"
